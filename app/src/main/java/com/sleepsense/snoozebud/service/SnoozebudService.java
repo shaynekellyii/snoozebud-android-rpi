@@ -1,4 +1,4 @@
-package com.sleepsense.snoozebud;
+package com.sleepsense.snoozebud.service;
 
 import android.app.Notification;
 import android.app.Service;
@@ -8,6 +8,8 @@ import android.os.IBinder;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+
+import com.sleepsense.snoozebud.SnoozebudNotification;
 
 /**
  * Created by shayne on 2017-12-03.

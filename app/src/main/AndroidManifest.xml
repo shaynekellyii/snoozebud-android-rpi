@@ -11,8 +11,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".SshActivity"></activity>
-        <activity android:name=".SetupActivity">
+        <activity android:name=".activity.SshActivity"></activity>
+        <activity android:name=".activity.SetupActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -20,25 +20,25 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".MyFirebaseMessagingService"
+        <service android:name=".service.SnoozebudFcmService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".MyFirebaseInstanceIDService"
+        <service android:name=".service.SnoozebudInstanceIDService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".SnoozebudService"
+        <service android:name=".service.SnoozebudService"
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".AlarmActivity"></activity>
+        <activity android:name=".activity.AlarmActivity"></activity>
     </application>
 
 </manifest>

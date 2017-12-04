@@ -1,4 +1,4 @@
-package com.sleepsense.snoozebud;
+package com.sleepsense.snoozebud.activity;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -17,6 +17,8 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.sleepsense.snoozebud.R;
+import com.sleepsense.snoozebud.SnoozebudSsh;
 
 import org.w3c.dom.Text;
 
@@ -72,6 +74,7 @@ public class SshActivity extends AppCompatActivity {
             }
         }.execute(ASYNC_START);
 
+        // TODO: Send Firebase ID to SnoozeBud
         firebaseIdTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -94,62 +97,22 @@ public class SshActivity extends AppCompatActivity {
     private String sshIntoPi() throws Exception {
         try {
             JSch sshChannel = new JSch();
+
+            // TODO: Add values to Keys class, set static IP on SnoozeBud
             Session session = sshChannel.getSession("pi", "142.58.167.2", 22);
             session.setPassword("snoozebud");
             session.setConfig("StrictHostKeyChecking", "no");
             session.connect();
             Log.d("SSH", "Session is connected");
 
-            // Add line to wpa_supplicant.conf
-            // sudo echo "text to add" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf
-//            network={
-//                    ssid="testing"
-//                    psk="testingPassword"
-//            }
-
-//            executeSshCommand(session, "wpa_cli");
-//            String networkNumberStr = executeSshCommand(session, "add_network");
-//            executeSshCommand(session, "set_network" + networkNumberStr + " ssid \"" + ssid + "\"");
-//            executeSshCommand(session, "set_network" + networkNumberStr + " psk \"" + ssid + "\"");
-//            executeSshCommand(session, "select_network " + networkNumberStr);
-//            executeSshCommand(session, "quit");
-
-//            executeSshCommand(session,
-//                    "sudo echo \"network={\" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf");
-//            executeSshCommand(session,
-//                    "sudo echo ssid=\\\"\"" + ssid + "\\\"\" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf");
-//            executeSshCommand(session,
-//                    "sudo echo psk=\\\"\"" + wifiPassword + "\\\"\" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf");
-//            executeSshCommand(session,
-//                    "sudo echo \"}\" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf");
-            executeSshCommand(session,
-                    "sudo sh -c 'wpa_passphrase " + ssid + " " + wifiPassword + " >> /etc/wpa_supplicant/wpa_supplicant.conf'");
-            executeSshCommand(session,
-                    "sudo shutdown -r now");
-
+            SnoozebudSsh.executeSshCommand(session,
+                    "sudo sh -c 'wpa_passphrase " + ssid + " " + wifiPassword +
+                            " >> /etc/wpa_supplicant/wpa_supplicant.conf'");
+            SnoozebudSsh.executeSshCommand(session, "sudo shutdown -r now");
         } catch (JSchException e) {
             e.printStackTrace();
         }
 
         return "done";
-    }
-
-    static String executeSshCommand(Session session, String command) throws Exception {
-        ChannelExec channel = (ChannelExec)session.openChannel("exec");
-        channel.setCommand(command);
-        channel.connect();
-
-        InputStream input = channel.getInputStream();
-        int data = input.read();
-
-        StringBuilder outputBuffer = new StringBuilder();
-        while (data != -1) {
-            outputBuffer.append((char)data);
-            data = input.read();
-        }
-
-        channel.disconnect();
-        Log.d("SSH", outputBuffer.toString());
-        return outputBuffer.toString();
     }
 }

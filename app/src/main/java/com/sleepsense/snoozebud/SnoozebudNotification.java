@@ -11,8 +11,8 @@ import android.os.Build;
  */
 
 public class SnoozebudNotification {
-    static final String NOTIFICATION_CHANNEL_ID = "0";
-    static final String NOTIFICATION_CHANNEL_NAME = "DEFAULT";
+    public static final String NOTIFICATION_CHANNEL_ID = "0";
+    private static final String NOTIFICATION_CHANNEL_NAME = "DEFAULT";
 
     public static void setupNotifications(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

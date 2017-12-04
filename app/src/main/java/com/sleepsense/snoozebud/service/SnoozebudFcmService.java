@@ -1,19 +1,19 @@
-package com.sleepsense.snoozebud;
+package com.sleepsense.snoozebud.service;
 
 import android.content.Intent;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.sleepsense.snoozebud.activity.AlarmActivity;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by shayne on 2017-12-03.
  */
 
-public class MyFirebaseMessagingService extends FirebaseMessagingService {
+public class SnoozebudFcmService extends FirebaseMessagingService {
 
     private static final String TAG = "FCM_SERVICE";
 

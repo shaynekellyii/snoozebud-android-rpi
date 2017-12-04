@@ -1,7 +1,9 @@
-package com.sleepsense.snoozebud;
+package com.sleepsense.snoozebud.activity;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import com.sleepsense.snoozebud.R;
 
 public class AlarmActivity extends AppCompatActivity {
 

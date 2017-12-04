@@ -12,6 +12,23 @@
         android:layout_height="wrap_content"
         android:text="ALARM"
         android:textAppearance="@android:style/TextAppearance.Material.Large"
-        tools:layout_editor_absoluteX="161dp"
-        tools:layout_editor_absoluteY="245dp" />
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toTopOf="@+id/stop_alarm_bt"
+        android:layout_marginStart="15dp"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="@+id/stop_alarm_bt" />
+
+    <Button
+        android:id="@+id/stop_alarm_bt"
+        style="@android:style/Widget.Material.Button.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="192dp"
+        android:text="Stop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_constraintBottom_creator="1"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1" />
 </android.support.constraint.ConstraintLayout>

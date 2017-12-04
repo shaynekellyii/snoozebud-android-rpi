@@ -19,7 +19,7 @@ import com.sleepsense.snoozebud.service.SnoozebudService;
 
 public class SetupActivity extends AppCompatActivity {
 
-    Button submitButton;
+    Button submitButton, testAlarmButton;
     TextView ssidTextView;
     TextView passwordTextView;
 
@@ -29,6 +29,7 @@ public class SetupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_setup);
 
         submitButton = (Button)findViewById(R.id.bt_submit);
+        testAlarmButton = (Button)findViewById(R.id.test_alarm_bt);
         ssidTextView = (TextView)findViewById(R.id.tv_ssid);
         passwordTextView = (TextView)findViewById(R.id.tv_password);
 
@@ -51,6 +52,13 @@ public class SetupActivity extends AppCompatActivity {
                 intent.putExtras(extras);
 
                 startActivity(intent);
+            }
+        });
+
+        testAlarmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(view.getContext(), AlarmActivity.class));
             }
         });
     }

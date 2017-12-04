@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "829304430898",
+    "firebase_url": "https://snoozebud-5a15e.firebaseio.com",
+    "project_id": "snoozebud-5a15e",
+    "storage_bucket": "snoozebud-5a15e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:829304430898:android:891a4381b64ba9a6",
+        "android_client_info": {
+          "package_name": "com.sleepsense.snoozebud"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "829304430898-8v7eo1tlrhu4bkq4qk54a3ckbkr48pin.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBw_5m5hN6JaG7xp4M4o2A7tsdFoM_FaHI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

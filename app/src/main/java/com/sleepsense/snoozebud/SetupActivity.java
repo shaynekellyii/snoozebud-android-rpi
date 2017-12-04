@@ -1,75 +1,56 @@
 package com.sleepsense.snoozebud;
 
-import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
-import android.widget.Toast;
-
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
-
-import java.io.ByteArrayOutputStream;
-import java.util.Properties;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 /**
- * Connects to Raspberry Pi and starts an SSH session.
- * Raspberry Pi should be connected to the phone by USB tethering
- * while this is running.
+ * Created by shayne on 2017-11-24.
+ * For user to enter the details of the WiFi network to connect to.
  */
 
 public class SetupActivity extends AppCompatActivity {
 
-    private static final String SSH_CHANNEL_TYPE = "exec";
-    private static final int ASYNC_START = 1;
+    Button submitButton;
+    TextView ssidTextView;
+    TextView passwordTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup);
 
-        new AsyncTask<Integer, Void, String>() {
+        submitButton = (Button)findViewById(R.id.bt_submit);
+        ssidTextView = (TextView)findViewById(R.id.tv_ssid);
+        passwordTextView = (TextView)findViewById(R.id.tv_password);
+
+        SnoozebudNotification.setupNotifications(this);
+
+        Intent serviceIntent = new Intent(this, SnoozebudService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
+
+        submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            protected String doInBackground(Integer... params) {
-                try {
-                    String response = sshIntoPi();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), SshActivity.class);
+                Bundle extras = new Bundle();
+                extras.putString("SSID", ssidTextView.getText().toString());
+                extras.putString("PASSWORD", passwordTextView.getText().toString());
+                intent.putExtras(extras);
+
+                startActivity(intent);
             }
-
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show();
-            }
-        }.execute(ASYNC_START);
-    }
-
-
-    private String sshIntoPi() throws Exception {
-        JSch jsch = new JSch();
-        Session session = jsch.getSession(Keys.PI_USERNAME, Keys.PI_IP, Keys.PI_PORT);
-        session.setPassword(Keys.PI_PASSWORD);
-
-        // Avoid asking for key confirmation
-        Properties properties = new Properties();
-        properties.put("StrictHostKeyChecking", "no");
-        session.setConfig(properties);
-
-        session.connect();
-
-        // Open SSH channel
-        ChannelExec channel = new ChannelExec();
-        session.openChannel(SSH_CHANNEL_TYPE);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        channel.setOutputStream(outputStream);
-
-        // Execute SSH commands
-        channel.setCommand("pwd"); // TODO: Get the actual command string to use
-        channel.connect();
-        channel.disconnect();
-
-        return outputStream.toString();
+        });
     }
 }

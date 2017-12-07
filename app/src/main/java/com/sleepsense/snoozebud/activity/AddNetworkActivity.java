@@ -6,11 +6,15 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.sleepsense.snoozebud.R;
@@ -23,7 +27,8 @@ import com.sleepsense.snoozebud.SnoozebudSsh;
 
 public class AddNetworkActivity extends AppCompatActivity {
 
-    Button submitButton, testAlarmButton;
+    Button submitButton;
+    CheckBox securedCheckBox;
     TextView ssidTextView;
     TextView passwordTextView;
 
@@ -35,23 +40,44 @@ public class AddNetworkActivity extends AppCompatActivity {
         submitButton = (Button)findViewById(R.id.bt_submit);
         ssidTextView = (TextView)findViewById(R.id.tv_ssid);
         passwordTextView = (TextView)findViewById(R.id.tv_password);
+        securedCheckBox = (CheckBox)findViewById(R.id.secured_cb);
+
+        securedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                passwordTextView.setEnabled(b);
+            }
+        });
 
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final String ssid = ssidTextView.getText().toString();
-                final String password = passwordTextView.getText().toString().length() < 8 ?
-                        "FAKE_PASSWORD" : passwordTextView.getText().toString();
+                final String password;
 
-                // TODO: Add validation
-                // TODO: Add support for unsecured network
+                if (securedCheckBox.isChecked()) {
+                    password = passwordTextView.getText().toString();
 
-                SharedPreferences sharedPreferences =
-                        PreferenceManager.getDefaultSharedPreferences(view.getContext());
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("SSID", ssid);
-                editor.putString("PASSWORD", password);
-                editor.apply();
+                    if (password.length() < 8) {
+                        Toast.makeText(
+                                AddNetworkActivity.this,
+                                "Password must be at least 8 characters.",
+                                Toast.LENGTH_LONG)
+                                .show();
+                        return;
+                    }
+                } else {
+                    password = "";
+                }
+
+//                SharedPreferences sharedPreferences =
+//                        PreferenceManager.getDefaultSharedPreferences(view.getContext());
+//                SharedPreferences.Editor editor = sharedPreferences.edit();
+//                editor.putString("SSID", ssid);
+//                if (securedCheckBox.isChecked()) {
+//                    editor.putString("PASSWORD", password);
+//                }
+//                editor.apply();
 
                 new AsyncTask<Integer, Void, String>() {
                     @Override
@@ -81,9 +107,22 @@ public class AddNetworkActivity extends AppCompatActivity {
         try {
             Session session = SnoozebudSsh.setupSession();
 
-            SnoozebudSsh.executeSshCommand(session,
-                    "sudo sh -c 'wpa_passphrase " + ssid + " " + password +
-                            " >> /etc/wpa_supplicant/wpa_supplicant.conf'");
+            if (password.equals("")) {
+                SnoozebudSsh.executeSshCommand(session,
+                        "sudo sh -c 'wpa_passphrase " + ssid + " " + password +
+                                " >> /etc/wpa_supplicant/wpa_supplicant.conf'");
+            } else {
+                // TODO: Need to fix.
+                SnoozebudSsh.executeSshCommand(session,
+                        "sudo sh -c 'echo network={ >> /etc/wpa_supplicant/wpa_supplicant.conf'");
+                SnoozebudSsh.executeSshCommand(session,
+                        "sudo sh -c 'echo ssid=\\\"" + ssid + "\\\" >> /etc/wpa_supplicant/wpa_supplicant.conf'");
+                SnoozebudSsh.executeSshCommand(session,
+                        "sudo sh -c 'echo key_mgmt=NONE >> /etc/wpa_supplicant/wpa_supplicant.conf'");
+                SnoozebudSsh.executeSshCommand(session,
+                        "sudo sh -c 'echo } >> /etc/wpa_supplicant/wpa_supplicant.conf'");
+            }
+
             SnoozebudSsh.executeSshCommand(session, "sudo shutdown -r now");
         } catch (JSchException e) {
             e.printStackTrace();

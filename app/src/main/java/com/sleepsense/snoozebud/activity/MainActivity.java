@@ -26,9 +26,7 @@ import com.sleepsense.snoozebud.service.SnoozebudService;
 import org.json.JSONObject;
 
 /**
- * Connects to Raspberry Pi and starts an SSH session.
- * Raspberry Pi should be connected to the phone by USB tethering
- * while this is running.
+ * Essentially the main menu of the app (for now).
  */
 
 public class MainActivity extends AppCompatActivity {

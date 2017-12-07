@@ -3,7 +3,6 @@ package com.sleepsense.snoozebud.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -15,9 +14,7 @@ import android.widget.Toast;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.sleepsense.snoozebud.R;
-import com.sleepsense.snoozebud.SnoozebudNotification;
 import com.sleepsense.snoozebud.SnoozebudSsh;
-import com.sleepsense.snoozebud.service.SnoozebudService;
 
 /**
  * Created by shayne on 2017-11-24.
@@ -36,7 +33,6 @@ public class AddNetworkActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_network);
 
         submitButton = (Button)findViewById(R.id.bt_submit);
-        testAlarmButton = (Button)findViewById(R.id.test_alarm_bt);
         ssidTextView = (TextView)findViewById(R.id.tv_ssid);
         passwordTextView = (TextView)findViewById(R.id.tv_password);
 
@@ -77,13 +73,6 @@ public class AddNetworkActivity extends AppCompatActivity {
                         AddNetworkActivity.this.finish();
                     }
                 }.execute(1);
-            }
-        });
-
-        testAlarmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(view.getContext(), AlarmActivity.class));
             }
         });
     }

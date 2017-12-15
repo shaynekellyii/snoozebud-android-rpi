@@ -16,6 +16,7 @@ import java.util.Map;
 public class SnoozebudFcmService extends FirebaseMessagingService {
 
     private static final String TAG = "FCM_SERVICE";
+    private static final String MESSAGE_RECEIVED = "";
 
     /**
      * Open the alarm activity when an alarm notification is received.

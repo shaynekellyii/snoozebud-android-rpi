@@ -16,7 +16,7 @@ public class SnoozebudSsh {
     private static final String SSH_CHANNEL_TYPE = "exec";
 
     public static String executeSshCommand(Session session, String command) throws Exception {
-        ChannelExec channel = (ChannelExec)session.openChannel("exec");
+        ChannelExec channel = (ChannelExec)session.openChannel(SSH_CHANNEL_TYPE);
         channel.setCommand(command);
         channel.connect();
 
@@ -37,8 +37,8 @@ public class SnoozebudSsh {
     public static Session setupSession() throws Exception {
         JSch sshChannel = new JSch();
 
-        // TODO: Add values to Keys class, set static IP on SnoozeBud
-        Session session = sshChannel.getSession("pi", "142.58.167.2", 22);
+        // TODO: Add values to Keys class
+        Session session = sshChannel.getSession("pi", "192.168.0.201", 22);
         session.setPassword("snoozebud");
         session.setConfig("StrictHostKeyChecking", "no");
         session.connect();

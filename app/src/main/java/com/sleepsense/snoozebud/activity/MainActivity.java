@@ -63,6 +63,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button pairButton = (Button)findViewById(R.id.pair_bt);
+        pairButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, SetSensitivityActivity.class));
+            }
+        });
+
         Button testAlarmButton = (Button)findViewById(R.id.test_alarm_bt);
         testAlarmButton.setOnClickListener(new View.OnClickListener() {
             @Override

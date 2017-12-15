@@ -107,7 +107,7 @@ public class AddNetworkActivity extends AppCompatActivity {
         try {
             Session session = SnoozebudSsh.setupSession();
 
-            if (password.equals("")) {
+            if (!password.equals("")) {
                 SnoozebudSsh.executeSshCommand(session,
                         "sudo sh -c 'wpa_passphrase " + ssid + " " + password +
                                 " >> /etc/wpa_supplicant/wpa_supplicant.conf'");

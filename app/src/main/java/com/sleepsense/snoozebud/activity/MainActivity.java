@@ -78,5 +78,32 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, AlarmActivity.class));
             }
         });
+
+        Button restartButton = (Button)findViewById(R.id.restart_bt);
+        restartButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new AsyncTask<Integer, Void, String>() {
+                    @Override
+                    protected String doInBackground(Integer... params) {
+                        try {
+                            SnoozebudSsh.restartSystem(SnoozebudSsh.setupSession());
+                            Toast.makeText(
+                                    MainActivity.this,
+                                    "SnoozeBud is now restarting",
+                                    Toast.LENGTH_LONG)
+                                    .show();
+                        } catch (Exception e) {
+                            Toast.makeText(
+                                    MainActivity.this,
+                                    "Error: " + e.getMessage(),
+                                    Toast.LENGTH_LONG)
+                                    .show();
+                        }
+                        return null;
+                    }
+                }.execute(1);
+            }
+        });
     }
 }

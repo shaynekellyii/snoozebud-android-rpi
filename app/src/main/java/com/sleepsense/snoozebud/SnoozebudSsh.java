@@ -46,4 +46,8 @@ public class SnoozebudSsh {
 
         return session;
     }
+
+    public static String restartSystem(Session session) throws Exception {
+        return executeSshCommand(session, "sudo shutdown -r now");
+    }
 }

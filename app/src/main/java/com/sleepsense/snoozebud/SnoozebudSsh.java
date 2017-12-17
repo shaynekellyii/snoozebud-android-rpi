@@ -1,9 +1,12 @@
 package com.sleepsense.snoozebud;
 
+import android.content.Context;
 import android.util.Log;
 
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 import java.io.InputStream;
@@ -16,7 +19,7 @@ public class SnoozebudSsh {
     private static final String SSH_CHANNEL_TYPE = "exec";
 
     public static String executeSshCommand(Session session, String command) throws Exception {
-        ChannelExec channel = (ChannelExec)session.openChannel(SSH_CHANNEL_TYPE);
+        ChannelExec channel = (ChannelExec) session.openChannel(SSH_CHANNEL_TYPE);
         channel.setCommand(command);
         channel.connect();
 
@@ -25,7 +28,7 @@ public class SnoozebudSsh {
 
         StringBuilder outputBuffer = new StringBuilder();
         while (data != -1) {
-            outputBuffer.append((char)data);
+            outputBuffer.append((char) data);
             data = input.read();
         }
 
@@ -34,11 +37,11 @@ public class SnoozebudSsh {
         return outputBuffer.toString();
     }
 
-    public static Session setupSession() throws Exception {
+    public static Session setupSession(Context context) throws Exception {
         JSch sshChannel = new JSch();
 
         // TODO: Add values to Keys class
-        Session session = sshChannel.getSession("pi", "192.168.0.201", 22);
+        Session session = sshChannel.getSession("pi", SnoozebudPrefs.getPref("IP_ADDRESS", context), 22);
         session.setPassword("snoozebud");
         session.setConfig("StrictHostKeyChecking", "no");
         session.connect();
@@ -49,5 +52,20 @@ public class SnoozebudSsh {
 
     public static String restartSystem(Session session) throws Exception {
         return executeSshCommand(session, "sudo shutdown -r now");
+    }
+
+    public static String setPiConfig(Context context) throws Exception {
+        Session session = SnoozebudSsh.setupSession(context);
+
+        SnoozebudSsh.executeSshCommand(session,
+                "sudo sh -c 'echo {\\\"sensitivity\\\": "
+                        + SnoozebudPrefs.getPref("SENSITIVITY", context)
+                        + ",  > /home/pi/snoozebud-rpi/config.json'");
+        SnoozebudSsh.executeSshCommand(session,
+                "sudo sh -c 'echo \\\"firebase_id\\\": \\\""
+                        + FirebaseInstanceId.getInstance().getToken()
+                        + "\\\"} >> /home/pi/snoozebud-rpi/config.json'");
+
+        return "done";
     }
 }

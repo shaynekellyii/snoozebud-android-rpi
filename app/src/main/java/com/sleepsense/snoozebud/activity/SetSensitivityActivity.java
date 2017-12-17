@@ -1,19 +1,19 @@
 package com.sleepsense.snoozebud.activity;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import com.sleepsense.snoozebud.R;
+import com.sleepsense.snoozebud.SnoozebudPrefs;
 import com.sleepsense.snoozebud.SnoozebudSsh;
 
 import static java.lang.Integer.parseInt;
@@ -22,21 +22,36 @@ import static java.lang.Integer.parseInt;
  * Created by shayne on 2017-12-06.
  */
 
-public class SetSensitivityActivity extends Activity {
+public class SetSensitivityActivity extends AppCompatActivity {
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_sensitivity);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.sensitivity_tb);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Set sensitivity");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+
         Button setButton = (Button) findViewById(R.id.set_sensitivity_bt);
         final TextView sensitivityTv = (TextView) findViewById(R.id.sensitivity_et);
+        sensitivityTv.setText(
+                SnoozebudPrefs.getPref("SENSITIVITY", this),
+                TextView.BufferType.EDITABLE);
 
         setButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final String sensitivity;
+                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                if (imm.isAcceptingText()) {
+                    imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                }
 
+                final String sensitivity;
                 try {
                     Integer.parseInt(sensitivityTv.getText().toString());
                 } catch (NumberFormatException e) {
@@ -58,23 +73,46 @@ public class SetSensitivityActivity extends Activity {
                     SetSensitivityActivity.this.finish();
                 }
 
+                SnoozebudPrefs.setPref("SENSITIVITY", sensitivity, SetSensitivityActivity.this);
+
                 new AsyncTask<Integer, Void, String>() {
+                    @Override
+                    protected void onPreExecute() {
+                        super.onPreExecute();
+                        TextView progressTv = (TextView) findViewById(R.id.sens_progress_tv);
+                        progressTv.setText(
+                                "Setting SnoozeBud sensitivity...",
+                                TextView.BufferType.NORMAL);
+                        findViewById(R.id.sens_progress_ll).setVisibility(View.VISIBLE);
+                    }
+
                     @Override
                     protected String doInBackground(Integer... params) {
                         try {
-                            String response = setMonitoringConfig(sensitivity);
+                            SnoozebudSsh.setPiConfig(SetSensitivityActivity.this);
+                            SnoozebudSsh.restartSystem(
+                                    SnoozebudSsh.setupSession(SetSensitivityActivity.this));
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            return e.getMessage();
                         }
-                        return null;
+                        return "done";
                     }
 
                     protected void onPostExecute(String result) {
-                        Toast.makeText(
-                                getApplicationContext(),
-                                "The config details have been added to the SnoozeBud",
-                                Toast.LENGTH_LONG)
-                                .show();
+                        findViewById(R.id.sens_progress_ll).setVisibility(View.INVISIBLE);
+                        if (result.equals("done")) {
+                            Toast.makeText(
+                                    getApplicationContext(),
+                                    "The SnoozeBud sensitivity has been set. Restarting the SnoozeBud...",
+                                    Toast.LENGTH_LONG)
+                                    .show();
+                        } else {
+                            Toast.makeText(
+                                    getApplicationContext(),
+                                    "Error: " + result,
+                                    Toast.LENGTH_LONG)
+                                    .show();
+                        }
                         SetSensitivityActivity.this.finish();
                     }
                 }.execute(1);
@@ -82,22 +120,11 @@ public class SetSensitivityActivity extends Activity {
         });
     }
 
-    private String setMonitoringConfig(String sensitivity) throws Exception {
-        try {
-            Session session = SnoozebudSsh.setupSession();
-
-            SnoozebudSsh.executeSshCommand(session,
-                    "sudo sh -c 'echo {\\\"sensitivity\\\": "
-                            + sensitivity
-                            + ",  > /home/pi/snoozebud-rpi/config.json'");
-            SnoozebudSsh.executeSshCommand(session,
-                    "sudo sh -c 'echo \\\"firebase_id\\\": \\\""
-                            + FirebaseInstanceId.getInstance().getToken()
-                            + "\\\"} >> /home/pi/snoozebud-rpi/config.json'");
-        } catch (JSchException e) {
-            e.printStackTrace();
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
         }
-
-        return "done";
+        return super.onOptionsItemSelected(item);
     }
 }

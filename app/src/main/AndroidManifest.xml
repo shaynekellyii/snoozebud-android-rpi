@@ -19,25 +19,33 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.AlarmActivity" />
-        <activity android:name=".activity.AddNetworkActivity" />
-        <activity android:name=".activity.SetSensitivityActivity" />
+        <activity android:name=".activity.AlarmActivity"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity android:name=".activity.AddNetworkActivity"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity android:name=".activity.SetSensitivityActivity"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity android:name=".activity.OptionsActivity"
+            android:windowSoftInputMode="stateHidden"/>
 
-        <service android:name=".service.SnoozebudFcmService"
+        <service
+            android:name=".service.SnoozebudFcmService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".service.SnoozebudInstanceIDService"
+        <service
+            android:name=".service.SnoozebudInstanceIDService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".service.SnoozebudService"
+        <service
+            android:name=".service.SnoozebudService"
             android:enabled="true"
             android:exported="true" />
     </application>

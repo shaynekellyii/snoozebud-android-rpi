@@ -6,8 +6,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -37,10 +40,18 @@ public class AddNetworkActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_network);
 
-        submitButton = (Button)findViewById(R.id.bt_submit);
-        ssidTextView = (TextView)findViewById(R.id.tv_ssid);
-        passwordTextView = (TextView)findViewById(R.id.tv_password);
-        securedCheckBox = (CheckBox)findViewById(R.id.secured_cb);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.sensitivity_tb);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Add WiFi network");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+
+        submitButton = (Button) findViewById(R.id.bt_submit);
+        ssidTextView = (TextView) findViewById(R.id.tv_ssid);
+        passwordTextView = (TextView) findViewById(R.id.tv_password);
+        securedCheckBox = (CheckBox) findViewById(R.id.secured_cb);
 
         securedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -52,6 +63,13 @@ public class AddNetworkActivity extends AppCompatActivity {
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                if (imm != null && imm.isAcceptingText()) {
+                    try {
+                        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                    } catch (NullPointerException e) {}
+                }
+
                 final String ssid = ssidTextView.getText().toString();
                 final String password;
 
@@ -70,32 +88,42 @@ public class AddNetworkActivity extends AppCompatActivity {
                     password = "";
                 }
 
-//                SharedPreferences sharedPreferences =
-//                        PreferenceManager.getDefaultSharedPreferences(view.getContext());
-//                SharedPreferences.Editor editor = sharedPreferences.edit();
-//                editor.putString("SSID", ssid);
-//                if (securedCheckBox.isChecked()) {
-//                    editor.putString("PASSWORD", password);
-//                }
-//                editor.apply();
-
                 new AsyncTask<Integer, Void, String>() {
+                    @Override
+                    protected void onPreExecute() {
+                        super.onPreExecute();
+                        TextView progressTv = (TextView) findViewById(R.id.network_progress_tv);
+                        progressTv.setText(
+                                "Adding WiFi network to the SnoozeBud...",
+                                TextView.BufferType.NORMAL);
+                        findViewById(R.id.network_progress_ll).setVisibility(View.VISIBLE);
+                    }
+
                     @Override
                     protected String doInBackground(Integer... params) {
                         try {
-                            String response = setWifiConfig(ssid, password);
+                            setWifiConfig(ssid, password);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            return e.getMessage();
                         }
-                        return null;
+                        return "done";
                     }
 
                     protected void onPostExecute(String result) {
-                        Toast.makeText(
-                                getApplicationContext(),
-                                "The WiFi details have been added to the SnoozeBud",
-                                Toast.LENGTH_LONG)
-                                .show();
+                        findViewById(R.id.network_progress_ll).setVisibility(View.INVISIBLE);
+                        if (result.equals("done")) {
+                            Toast.makeText(
+                                    getApplicationContext(),
+                                    "The WiFi details have been added to the SnoozeBud",
+                                    Toast.LENGTH_LONG)
+                                    .show();
+                        } else {
+                            Toast.makeText(
+                                    getApplicationContext(),
+                                    "Error: " + result,
+                                    Toast.LENGTH_LONG)
+                                    .show();
+                        }
                         AddNetworkActivity.this.finish();
                     }
                 }.execute(1);
@@ -103,16 +131,23 @@ public class AddNetworkActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private String setWifiConfig(String ssid, String password) throws Exception {
         try {
-            Session session = SnoozebudSsh.setupSession();
+            Session session = SnoozebudSsh.setupSession(AddNetworkActivity.this);
 
             if (!password.equals("")) {
                 SnoozebudSsh.executeSshCommand(session,
                         "sudo sh -c 'wpa_passphrase " + ssid + " " + password +
                                 " >> /etc/wpa_supplicant/wpa_supplicant.conf'");
             } else {
-                // TODO: Need to fix.
                 SnoozebudSsh.executeSshCommand(session,
                         "sudo sh -c 'echo network={ >> /etc/wpa_supplicant/wpa_supplicant.conf'");
                 SnoozebudSsh.executeSshCommand(session,
